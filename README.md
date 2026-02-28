@@ -232,14 +232,15 @@ npm run test:report
 
 ### Toolchain Overview
 
-| Tool | Purpose | Config File |
-|------|---------|-------------|
-| **ESLint** | JavaScript linting | `.eslintrc.json` |
-| **Prettier** | Code formatting | `.prettierrc` |
-| **Playwright** | E2E & API testing | `playwright.config.js` |
-| **nodemon** | Hot reload | `nodemon.json` |
+| Tool           | Purpose            | Config File            |
+| -------------- | ------------------ | ---------------------- |
+| **ESLint**     | JavaScript linting | `.eslintrc.json`       |
+| **Prettier**   | Code formatting    | `.prettierrc`          |
+| **Playwright** | E2E & API testing  | `playwright.config.js` |
+| **nodemon**    | Hot reload         | `nodemon.json`         |
 
 Tests cover:
+
 - Page load and canvas rendering
 - HUD element visibility
 - Remote button interactions

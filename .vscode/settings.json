@@ -1,0 +1,38 @@
+{
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": ["javascript", "html"],
+    "eslint.options": {
+      "extensions": [".js"]
+    },
+    "prettier.configPath": ".prettierrc",
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false,
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/playwright-report": true,
+      "**/test-results": true,
+      "**/.git": true
+    },
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/playwright-report/**": true,
+      "**/test-results/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-playwright.playwright",
+      "streetsidesoftware.code-spell-checker"
+    ]
+  }
+}
