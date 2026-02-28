@@ -196,76 +196,76 @@ function handleButton(key) {
   const p = state.params;
 
   switch (key) {
-  // D-pad → hue rotation
-  case 'Left':
-    p.hue = (p.hue - 15 + 360) % 360;
-    break;
-  case 'Right':
-    p.hue = (p.hue + 15) % 360;
-    break;
+    // D-pad → hue rotation
+    case 'Left':
+      p.hue = (p.hue - 15 + 360) % 360;
+      break;
+    case 'Right':
+      p.hue = (p.hue + 15) % 360;
+      break;
 
     // Up/Down → speed
-  case 'Up':
-    p.speed = Math.min(5.0, +(p.speed + 0.25).toFixed(2));
-    break;
-  case 'Down':
-    p.speed = Math.max(0.1, +(p.speed - 0.25).toFixed(2));
-    break;
+    case 'Up':
+      p.speed = Math.min(5.0, +(p.speed + 0.25).toFixed(2));
+      break;
+    case 'Down':
+      p.speed = Math.max(0.1, +(p.speed - 0.25).toFixed(2));
+      break;
 
     // OK → cycle mode
-  case 'Select':
-  case 'OK': {
-    const idx = MODES.indexOf(p.mode);
-    p.mode = MODES[(idx + 1) % MODES.length];
-    addLog('button', `Mode cycled to: ${p.mode}`);
-    break;
-  }
+    case 'Select':
+    case 'OK': {
+      const idx = MODES.indexOf(p.mode);
+      p.mode = MODES[(idx + 1) % MODES.length];
+      addLog('button', `Mode cycled to: ${p.mode}`);
+      break;
+    }
 
-  // * → increase complexity
-  case 'Info':
-  case 'Star':
-    p.complexity = (p.complexity % 8) + 1;
-    break;
+    // * → increase complexity
+    case 'Info':
+    case 'Star':
+      p.complexity = (p.complexity % 8) + 1;
+      break;
 
     // Back → decrease complexity
-  case 'Back':
-    p.complexity = Math.max(1, p.complexity - 1);
-    break;
+    case 'Back':
+      p.complexity = Math.max(1, p.complexity - 1);
+      break;
 
     // Play/Pause → toggle color shift
-  case 'Play':
-  case 'Pause':
-    p.colorShift = !p.colorShift;
-    break;
+    case 'Play':
+    case 'Pause':
+      p.colorShift = !p.colorShift;
+      break;
 
     // Fwd/Rev → scale
-  case 'Fwd':
-    p.scale = Math.min(3.0, +(p.scale + 0.2).toFixed(1));
-    break;
-  case 'Rev':
-    p.scale = Math.max(0.2, +(p.scale - 0.2).toFixed(1));
-    break;
+    case 'Fwd':
+      p.scale = Math.min(3.0, +(p.scale + 0.2).toFixed(1));
+      break;
+    case 'Rev':
+      p.scale = Math.max(0.2, +(p.scale - 0.2).toFixed(1));
+      break;
 
     // Volume (ECP keypresses only — actual volume isn't readable)
-  case 'VolumeUp':
-    state.volume = Math.min(100, state.volume + 5);
-    break;
-  case 'VolumeDown':
-    state.volume = Math.max(0, state.volume - 5);
-    break;
+    case 'VolumeUp':
+      state.volume = Math.min(100, state.volume + 5);
+      break;
+    case 'VolumeDown':
+      state.volume = Math.max(0, state.volume - 5);
+      break;
 
     // Home → reset
-  case 'Home':
-    Object.assign(p, {
-      hue: 200,
-      speed: 1.0,
-      complexity: 3,
-      scale: 1.0,
-      mode: 'lissajous',
-      colorShift: false
-    });
-    addLog('button', 'Params reset to defaults');
-    break;
+    case 'Home':
+      Object.assign(p, {
+        hue: 200,
+        speed: 1.0,
+        complexity: 3,
+        scale: 1.0,
+        mode: 'lissajous',
+        colorShift: false
+      });
+      addLog('button', 'Params reset to defaults');
+      break;
   }
 
   broadcast({ type: 'button', key, params: p });

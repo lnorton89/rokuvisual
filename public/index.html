@@ -364,9 +364,15 @@
         text-transform: uppercase;
         letter-spacing: 0.1em;
         transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
       #cast-toggle:hover {
         background: hsl(var(--hue), 80%, 50%);
+      }
+      .cast-icon {
+        font-size: 14px;
       }
     </style>
   </head>
@@ -374,7 +380,10 @@
     <canvas id="c"></canvas>
 
     <!-- Cast toggle button -->
-    <button id="cast-toggle">📺 Cast</button>
+    <button id="cast-toggle">
+      <span class="cast-icon">📺</span>
+      <span>Cast</span>
+    </button>
 
     <!-- Cast panel -->
     <div id="cast-panel">
@@ -383,17 +392,32 @@
         <button class="cast-close" id="cast-close">×</button>
       </div>
       <div class="cast-row">
-        <input type="text" id="roku-ip-input" class="cast-input" placeholder="Roku IP (e.g., 192.168.1.155)">
+        <input
+          type="text"
+          id="roku-ip-input"
+          class="cast-input"
+          placeholder="Roku IP (e.g., 192.168.1.155)"
+        />
         <button class="cast-btn" id="cast-save-ip">Save</button>
       </div>
       <div class="cast-row">
-        <input type="text" id="media-url-input" class="cast-input" placeholder="Media URL (HLS/MP4)">
+        <input
+          type="text"
+          id="media-url-input"
+          class="cast-input"
+          placeholder="Media URL (HLS/MP4)"
+        />
       </div>
       <div class="cast-row">
-        <input type="text" id="media-title-input" class="cast-input" placeholder="Title (optional)">
+        <input
+          type="text"
+          id="media-title-input"
+          class="cast-input"
+          placeholder="Title (optional)"
+        />
       </div>
       <div class="cast-row">
-        <button class="cast-btn" id="cast-send-btn" style="flex:1">Cast to Roku</button>
+        <button class="cast-btn" id="cast-send-btn" style="flex: 1">Cast to Roku</button>
       </div>
       <div class="cast-status">
         <span class="cast-status-dot" id="cast-status-dot"></span>
