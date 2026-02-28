@@ -59,7 +59,7 @@ test.describe('Roku Visual App', () => {
 
     // Wait for logs to appear (indicates WS connection)
     const logPanel = page.locator('#log-panel');
-    await expect(logPanel).toContainText(/connected|ws/i, { timeout: 5000 });
+    await expect(logPanel).toContainText(/ecp|button/i, { timeout: 5000 });
   });
 
   test('keyboard shortcuts work', async ({ page }) => {

@@ -62,6 +62,12 @@
         gap: 4px;
       }
 
+      .hud-block.center {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
       .hud-label {
         font-size: 9px;
         letter-spacing: 0.2em;
@@ -253,7 +259,7 @@
         <span class="hud-value" id="hud-app">—</span>
         <span class="hud-value" id="hud-power" style="font-size: 10px; opacity: 0.5"></span>
       </div>
-      <div class="hud-block" style="align-items: center">
+      <div class="hud-block center">
         <div id="mode-badge">lissajous</div>
       </div>
       <div class="hud-block" style="align-items: flex-end">
