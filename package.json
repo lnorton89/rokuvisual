@@ -24,6 +24,14 @@
   ],
   "author": "",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lnorton89/rokuvisual.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lnorton89/rokuvisual/issues"
+  },
+  "homepage": "https://github.com/lnorton89/rokuvisual#readme",
   "dependencies": {
     "express": "^5.2.1",
     "ws": "^8.19.0"
