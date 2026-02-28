@@ -44,8 +44,13 @@ class RokuPoller {
       if (!this.hasConnectedOnce) {
         this.hasConnectedOnce = true;
         this.state.powerMode = powerMode;  // Set initial state without logging change
+        this.state.connected = true;
+        this.connected = true;
         addLog('info', `✓ ECP API connected to Roku at ${this.ecp.ip}:${this.ecp.port}`);
         addLog('info', `✓ Roku device is ${powerMode === 'PowerOn' ? 'on' : powerMode}`);
+        // Broadcast initial connection state to update status dot
+        broadcast({ type: 'state', state: this.safeState() });
+        return;
       } else if (powerMode !== this.state.powerMode) {
         // Power mode changed after initial connection
         this.state.powerMode = powerMode;
