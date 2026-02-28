@@ -11,11 +11,16 @@ function createWebSocketServer(server) {
     console.log('[ws] client connected');
     registerClient(ws);
 
-    // Send initial state with logs
+    // Send initial state (without button history to avoid replay)
     ws.send(
       JSON.stringify({
         type: 'state',
-        state: global.state
+        state: {
+          ...global.state,
+          lastButton: null,  // Don't replay last button
+          buttonHistory: []  // Don't replay button history
+        },
+        isInitial: true  // Flag to indicate this is initial sync
       })
     );
 

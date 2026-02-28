@@ -485,17 +485,27 @@
       const logs = [];
       let reconnectCount = 0;
       let serverVersion = Date.now();
+      let lastDisconnectTime = 0;
 
       function connect() {
         ws = new WebSocket(WS_URL);
         ws.onopen = () => {
           console.log('[ws] connected');
           reconnectCount = 0;
+          lastDisconnectTime = 0;
         };
         ws.onclose = () => {
-          reconnectCount++;
+          const now = Date.now();
+          // Only count as reconnect if within 5 seconds of last disconnect
+          if (now - lastDisconnectTime < 5000) {
+            reconnectCount++;
+          } else {
+            reconnectCount = 1;
+          }
+          lastDisconnectTime = now;
+
           // If we reconnect quickly, server likely restarted - refresh page
-          if (reconnectCount > 0 && reconnectCount < 5) {
+          if (reconnectCount > 1 && reconnectCount < 5) {
             console.log('[ws] server restarted, refreshing...');
             setTimeout(() => location.reload(), 500);
           }
@@ -503,7 +513,9 @@
         };
         ws.onmessage = (e) => {
           const msg = JSON.parse(e.data);
-          if (msg.type === 'state') applyState(msg.state);
+          if (msg.type === 'state') {
+            applyState(msg.state, msg.isInitial);
+          }
           if (msg.type === 'button') {
             params = msg.params;
             flashButton(msg.key);
@@ -554,7 +566,7 @@
         if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'keypress', key }));
       }
 
-      function applyState(s) {
+      function applyState(s, isInitial = false) {
         params = s.params;
         document.getElementById('status').className = s.connected ? 'ok' : '';
         document.getElementById('hud-app').textContent = s.activeApp || '—';
