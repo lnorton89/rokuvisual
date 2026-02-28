@@ -43,14 +43,13 @@ class RokuPoller {
       // First successful connection
       if (!this.hasConnectedOnce) {
         this.hasConnectedOnce = true;
+        this.state.powerMode = powerMode;  // Set initial state without logging change
         addLog('info', `✓ ECP connected to Roku at ${this.ecp.ip}:${this.ecp.port}`);
-        addLog('ecp', `Power mode: ${powerMode}`);
-      }
-
-      // Check power mode change
-      if (powerMode !== this.state.powerMode) {
+        addLog('info', `✓ Roku device is ${powerMode === 'PowerOn' ? 'on' : powerMode}`);
+      } else if (powerMode !== this.state.powerMode) {
+        // Power mode changed after initial connection
         this.state.powerMode = powerMode;
-        addLog('ecp', `Power mode: ${powerMode}`);
+        addLog('info', `Roku power mode changed: ${powerMode}`);
         changed = true;
       }
 
@@ -58,7 +57,7 @@ class RokuPoller {
       if (appName !== this.state.activeApp) {
         this.state.activeApp = appName;
         this.state.activeAppId = appId;
-        addLog('ecp', `App changed: ${appName}`);
+        addLog('info', `App changed: ${appName}`);
 
         // Shift hue on app change
         this.state.params.hue = (this.state.params.hue + 47) % 360;
