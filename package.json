@@ -1,0 +1,26 @@
+{
+  "name": "roku-visual",
+  "version": "1.0.0",
+  "description": "Generative visual art controlled by Roku remote via ECP API",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon"
+  },
+  "keywords": [
+    "roku",
+    "ecp",
+    "generative-art",
+    "visualization",
+    "websocket"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
