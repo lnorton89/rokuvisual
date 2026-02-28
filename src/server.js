@@ -283,7 +283,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.post('/keypress/:key', (req, res) => {
   handleButton(req.params.key);
   // Also forward to Roku so the TV actually responds
-  ecpPost(`/keypress/${req.params.key}`).catch(() => {});
+  ecpPost(`/keypress/${req.params.key}`).catch(() => { });
   res.json({ ok: true, key: req.params.key });
 });
 
