@@ -483,11 +483,24 @@
           colorShift: false
         };
       const logs = [];
+      let reconnectCount = 0;
+      let serverVersion = Date.now();
 
       function connect() {
         ws = new WebSocket(WS_URL);
-        ws.onopen = () => console.log('[ws] connected');
-        ws.onclose = () => setTimeout(connect, 2000);
+        ws.onopen = () => {
+          console.log('[ws] connected');
+          reconnectCount = 0;
+        };
+        ws.onclose = () => {
+          reconnectCount++;
+          // If we reconnect quickly, server likely restarted - refresh page
+          if (reconnectCount > 0 && reconnectCount < 5) {
+            console.log('[ws] server restarted, refreshing...');
+            setTimeout(() => location.reload(), 500);
+          }
+          setTimeout(connect, 2000);
+        };
         ws.onmessage = (e) => {
           const msg = JSON.parse(e.data);
           if (msg.type === 'state') applyState(msg.state);
@@ -498,6 +511,9 @@
           }
           if (msg.type === 'log') {
             addLogEntry(msg.entry);
+          }
+          if (msg.type === 'reload') {
+            location.reload();
           }
         };
       }

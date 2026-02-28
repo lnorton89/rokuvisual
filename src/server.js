@@ -283,7 +283,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.post('/keypress/:key', (req, res) => {
   handleButton(req.params.key);
   // Also forward to Roku so the TV actually responds
-  ecpPost(`/keypress/${req.params.key}`).catch(() => { });
+  ecpPost(`/keypress/${req.params.key}`).catch(() => {});
   res.json({ ok: true, key: req.params.key });
 });
 
@@ -348,3 +348,15 @@ server.listen(HOST_PORT, () => {
 
 setInterval(pollRoku, POLL_MS);
 pollRoku();
+
+// Graceful shutdown - notify clients before restart
+process.on('SIGINT', () => {
+  console.log('\n[reload] Shutting down...');
+  broadcast({ type: 'reload' });
+  setTimeout(() => process.exit(0), 500);
+});
+
+process.on('SIGTERM', () => {
+  broadcast({ type: 'reload' });
+  setTimeout(() => process.exit(0), 500);
+});
