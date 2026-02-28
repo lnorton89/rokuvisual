@@ -19,36 +19,36 @@ const ROKU_IP = process.env.ROKU_IP || '192.168.1.155';
 const ROKU_PORT = 8060;
 const HOST_PORT = process.env.PORT || 30002;
 const POLL_MS = 200; // how often to poll ECP (ms)
-const LOG_MAX = 50;   // max log entries to keep
+const LOG_MAX = 50; // max log entries to keep
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
 const state = {
   connected: false,
-  powerMode: 'unknown',       // PowerOn | DisplayOff | Headless
+  powerMode: 'unknown', // PowerOn | DisplayOff | Headless
   activeApp: 'Home',
   activeAppId: '0',
-  volume: 50,                 // estimated 0-100 (ECP doesn't expose real volume)
-  lastButton: null,           // most recent button detected via keyboard polling
-  buttonHistory: [],          // rolling last-10 buttons
+  volume: 50, // estimated 0-100 (ECP doesn't expose real volume)
+  lastButton: null, // most recent button detected via keyboard polling
+  buttonHistory: [], // rolling last-10 buttons
   deviceInfo: {},
-  logs: [],                   // real-time log entries
+  logs: [], // real-time log entries
   // Derived generative params (updated by button events)
   params: {
-    hue: 200,                 // 0-360
-    speed: 1.0,               // 0.1 - 5.0
-    complexity: 3,            // 1 - 8  (number of lobes / harmonics)
-    scale: 1.0,               // 0.2 - 3.0
-    mode: 'lissajous',        // lissajous | rose | spirograph | wave | particles
+    hue: 200, // 0-360
+    speed: 1.0, // 0.1 - 5.0
+    complexity: 3, // 1 - 8  (number of lobes / harmonics)
+    scale: 1.0, // 0.2 - 3.0
+    mode: 'lissajous', // lissajous | rose | spirograph | wave | particles
     colorShift: false,
-    pulseOnBeat: false,
+    pulseOnBeat: false
   }
 };
 
 function addLog(level, message, detail = '') {
   const entry = {
     ts: new Date().toISOString(),
-    level,      // 'info' | 'warn' | 'error' | 'ecp' | 'button'
+    level, // 'info' | 'warn' | 'error' | 'ecp' | 'button'
     message,
     detail
   };
@@ -56,10 +56,15 @@ function addLog(level, message, detail = '') {
   broadcast({ type: 'log', entry });
   // Also print to console
   const prefix = `[${entry.ts.slice(11, 23)}]`;
-  if (level === 'error') console.error(`${prefix} ${message}`, detail);
-  else if (level === 'ecp') console.log(`${prefix} [ECP] ${message}`);
-  else if (level === 'button') console.log(`${prefix} [BTN] ${message}`);
-  else console.log(`${prefix} ${message}`);
+  if (level === 'error') {
+    console.error(`${prefix} ${message}`, detail);
+  } else if (level === 'ecp') {
+    console.log(`${prefix} [ECP] ${message}`);
+  } else if (level === 'button') {
+    console.log(`${prefix} [BTN] ${message}`);
+  } else {
+    console.log(`${prefix} ${message}`);
+  }
 }
 
 const MODES = ['lissajous', 'rose', 'spirograph', 'wave', 'particles'];
@@ -68,39 +73,44 @@ const MODES = ['lissajous', 'rose', 'spirograph', 'wave', 'particles'];
 
 function ecpGet(path) {
   return new Promise((resolve, reject) => {
-    const req = http.get(
-      { hostname: ROKU_IP, port: ROKU_PORT, path, timeout: 1500 },
-      res => {
-        let data = '';
-        res.on('data', chunk => (data += chunk));
-        res.on('end', () => resolve(data));
-      }
-    );
-    req.on('error', err => {
+    const req = http.get({ hostname: ROKU_IP, port: ROKU_PORT, path, timeout: 1500 }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => resolve(data));
+    });
+    req.on('error', (err) => {
       addLog('error', `ECP GET ${path} failed`, err.message);
       reject(err);
     });
-    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('timeout'));
+    });
   });
 }
 
 function ecpPost(path) {
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: ROKU_IP, port: ROKU_PORT,
-      path, method: 'POST',
+      hostname: ROKU_IP,
+      port: ROKU_PORT,
+      path,
+      method: 'POST',
       headers: { 'Content-Length': 0 },
       timeout: 1500
     };
-    const req = http.request(options, res => {
+    const req = http.request(options, (res) => {
       res.resume();
       res.on('end', resolve);
     });
-    req.on('error', err => {
+    req.on('error', (err) => {
       addLog('error', `ECP POST ${path} failed`, err.message);
       reject(err);
     });
-    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('timeout'));
+    });
     req.end();
   });
 }
@@ -113,7 +123,6 @@ function xmlField(xml, tag) {
 
 // ── Polling ───────────────────────────────────────────────────────────────────
 
-let lastKeyPressXml = '';
 let ecpErrorCount = 0;
 
 async function pollRoku() {
@@ -121,7 +130,6 @@ async function pollRoku() {
     // 1. Device info (power, volume hint, etc.)
     const infoXml = await ecpGet('/query/device-info');
     const powerMode = xmlField(infoXml, 'power-mode') || 'unknown';
-    const softwareBuild = xmlField(infoXml, 'software-build') || '';
 
     ecpErrorCount = 0; // reset on success
 
@@ -133,9 +141,7 @@ async function pollRoku() {
     // 3. Key press detection via media player state (indirect approach)
     //    Roku doesn't expose raw key events via ECP, but we can watch
     //    media-player state changes as a proxy for user interaction.
-    const mpXml = await ecpGet('/query/media-player');
-    const mpState = xmlField(mpXml, 'state') || 'none';
-    const mpPosition = parseInt(xmlField(mpXml, 'position') || '0', 10);
+    await ecpGet('/query/media-player');
 
     let changed = false;
 
@@ -155,8 +161,9 @@ async function pollRoku() {
 
     state.connected = true;
 
-    if (changed) broadcast({ type: 'state', state: safeState() });
-
+    if (changed) {
+      broadcast({ type: 'state', state: safeState() });
+    }
   } catch (err) {
     ecpErrorCount++;
     if (state.connected) {
@@ -183,19 +190,27 @@ function handleButton(key) {
   console.log(`[button] ${key}`);
   state.lastButton = key;
   state.buttonHistory = [key, ...state.buttonHistory].slice(0, 10);
-  
+
   addLog('button', `Key pressed: ${key}`);
 
   const p = state.params;
 
   switch (key) {
     // D-pad → hue rotation
-    case 'Left': p.hue = (p.hue - 15 + 360) % 360; break;
-    case 'Right': p.hue = (p.hue + 15) % 360; break;
+    case 'Left':
+      p.hue = (p.hue - 15 + 360) % 360;
+      break;
+    case 'Right':
+      p.hue = (p.hue + 15) % 360;
+      break;
 
     // Up/Down → speed
-    case 'Up': p.speed = Math.min(5.0, +(p.speed + 0.25).toFixed(2)); break;
-    case 'Down': p.speed = Math.max(0.1, +(p.speed - 0.25).toFixed(2)); break;
+    case 'Up':
+      p.speed = Math.min(5.0, +(p.speed + 0.25).toFixed(2));
+      break;
+    case 'Down':
+      p.speed = Math.max(0.1, +(p.speed - 0.25).toFixed(2));
+      break;
 
     // OK → cycle mode
     case 'Select':
@@ -208,28 +223,46 @@ function handleButton(key) {
 
     // * → increase complexity
     case 'Info':
-    case 'Star': p.complexity = (p.complexity % 8) + 1; break;
+    case 'Star':
+      p.complexity = (p.complexity % 8) + 1;
+      break;
 
     // Back → decrease complexity
-    case 'Back': p.complexity = Math.max(1, p.complexity - 1); break;
+    case 'Back':
+      p.complexity = Math.max(1, p.complexity - 1);
+      break;
 
     // Play/Pause → toggle color shift
     case 'Play':
-    case 'Pause': p.colorShift = !p.colorShift; break;
+    case 'Pause':
+      p.colorShift = !p.colorShift;
+      break;
 
     // Fwd/Rev → scale
-    case 'Fwd': p.scale = Math.min(3.0, +(p.scale + 0.2).toFixed(1)); break;
-    case 'Rev': p.scale = Math.max(0.2, +(p.scale - 0.2).toFixed(1)); break;
+    case 'Fwd':
+      p.scale = Math.min(3.0, +(p.scale + 0.2).toFixed(1));
+      break;
+    case 'Rev':
+      p.scale = Math.max(0.2, +(p.scale - 0.2).toFixed(1));
+      break;
 
     // Volume (ECP keypresses only — actual volume isn't readable)
-    case 'VolumeUp': state.volume = Math.min(100, state.volume + 5); break;
-    case 'VolumeDown': state.volume = Math.max(0, state.volume - 5); break;
+    case 'VolumeUp':
+      state.volume = Math.min(100, state.volume + 5);
+      break;
+    case 'VolumeDown':
+      state.volume = Math.max(0, state.volume - 5);
+      break;
 
     // Home → reset
     case 'Home':
       Object.assign(p, {
-        hue: 200, speed: 1.0, complexity: 3, scale: 1.0,
-        mode: 'lissajous', colorShift: false
+        hue: 200,
+        speed: 1.0,
+        complexity: 3,
+        scale: 1.0,
+        mode: 'lissajous',
+        colorShift: false
       });
       addLog('button', 'Params reset to defaults');
       break;
@@ -250,7 +283,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.post('/keypress/:key', (req, res) => {
   handleButton(req.params.key);
   // Also forward to Roku so the TV actually responds
-  ecpPost(`/keypress/${req.params.key}`).catch(() => { });
+  ecpPost(`/keypress/${req.params.key}`).catch(() => {});
   res.json({ ok: true, key: req.params.key });
 });
 
@@ -258,20 +291,24 @@ app.post('/keypress/:key', (req, res) => {
 app.get('/state', (req, res) => res.json(safeState()));
 
 // WebSocket
-wss.on('connection', ws => {
+wss.on('connection', (ws) => {
   console.log('[ws] client connected');
   // Send initial state with logs
   ws.send(JSON.stringify({ type: 'state', state: safeState() }));
   // Send existing logs
-  state.logs.forEach(entry => {
+  state.logs.forEach((entry) => {
     ws.send(JSON.stringify({ type: 'log', entry }));
   });
 
-  ws.on('message', raw => {
+  ws.on('message', (raw) => {
     try {
       const msg = JSON.parse(raw);
-      if (msg.type === 'keypress' && msg.key) handleButton(msg.key);
-    } catch { }
+      if (msg.type === 'keypress' && msg.key) {
+        handleButton(msg.key);
+      }
+    } catch (e) {
+      // Ignore invalid JSON
+    }
   });
 
   ws.on('close', () => console.log('[ws] client disconnected'));
@@ -279,8 +316,10 @@ wss.on('connection', ws => {
 
 function broadcast(obj) {
   const msg = JSON.stringify(obj);
-  wss.clients.forEach(c => {
-    if (c.readyState === 1) c.send(msg);
+  wss.clients.forEach((c) => {
+    if (c.readyState === 1) {
+      c.send(msg);
+    }
   });
 }
 
@@ -293,17 +332,17 @@ function safeState() {
     lastButton: state.lastButton,
     buttonHistory: state.buttonHistory,
     params: { ...state.params },
-    logs: state.logs,
+    logs: state.logs
   };
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
 server.listen(HOST_PORT, () => {
-  console.log(`\n🎨 Roku Generative Visual`);
+  console.log('\n🎨 Roku Generative Visual');
   console.log(`   Server  → http://localhost:${HOST_PORT}`);
   console.log(`   Roku IP → ${ROKU_IP}:${ROKU_PORT}`);
-  console.log(`\n   Set your Roku IP:  ROKU_IP=x.x.x.x node server.js`);
+  console.log('\n   Set your Roku IP:  ROKU_IP=x.x.x.x node server.js');
   console.log(`   Inject buttons:    POST http://localhost:${HOST_PORT}/keypress/<Key>\n`);
 });
 
