@@ -3,10 +3,21 @@ const { addLog, broadcast } = require('../lib/logger');
 
 const cfg = config.loadConfig();
 
+// Debounce button events
+let lastButtonTime = 0;
+const BUTTON_DEBOUNCE_MS = 50; // Minimum time between button events
+
 /**
  * Handle button press and update visual params
  */
 function handleButton(key, state, source = 'unknown') {
+  // Debounce rapid button presses
+  const now = Date.now();
+  if (now - lastButtonTime < BUTTON_DEBOUNCE_MS) {
+    return state;
+  }
+  lastButtonTime = now;
+
   addLog('button', `Key pressed: ${key}${source !== 'unknown' ? ` [${source}]` : ''}`);
 
   state.lastButton = key;

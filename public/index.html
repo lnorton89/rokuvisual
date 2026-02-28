@@ -568,8 +568,13 @@
       }
 
       function sendKey(key) {
-        // Send via WebSocket (server will also forward to Roku ECP)
-        if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'keypress', key }));
+        // Only send if WebSocket is connected and we're not in an input field
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+          return;
+        }
+        if (ws && ws.readyState === 1) {
+          ws.send(JSON.stringify({ type: 'keypress', key }));
+        }
       }
 
       function applyState(s, isInitial = false) {
@@ -605,11 +610,21 @@
 
       // ── On-screen remote ──────────────────────────────────────────────────────────
       document.querySelectorAll('.rkey[data-key]').forEach((btn) => {
-        btn.addEventListener('pointerdown', () => {
+        btn.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
           btn.classList.add('pressed');
           sendKey(btn.dataset.key);
         });
-        btn.addEventListener('pointerup', () => btn.classList.remove('pressed'));
+        btn.addEventListener('pointerup', (e) => {
+          e.preventDefault();
+          btn.classList.remove('pressed');
+        });
+        btn.addEventListener('pointerleave', () => {
+          btn.classList.remove('pressed');
+        });
+        btn.addEventListener('pointercancel', () => {
+          btn.classList.remove('pressed');
+        });
       });
 
       // Keyboard mapping

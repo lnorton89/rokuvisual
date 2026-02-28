@@ -194,6 +194,155 @@ Write a separate script that monitors your network for Roku ECP responses and fo
 POST http://localhost:30002/keypress/Select
 ```
 
+## Media Assistant Integration
+
+**Roku Visual** works seamlessly with [Media Assistant](https://github.com/MedievalApple/Media-Assistant), a Roku channel that enables media playback from URLs via deeplink commands. This integration allows you to:
+
+- Play media content (audio/video) directly through Media Assistant
+- Control Media Assistant playback using the same ECP commands
+- Visualize Media Assistant's UI state in the Roku Visual interface
+
+### Installing Media Assistant
+
+#### From Roku Channel Store (Recommended)
+
+1. Visit [medievalapple.net/ma-setup](https://medievalapple.net/ma-setup)
+2. Or search for "Media Assistant" in the Roku Channel Store
+3. Channel ID: `782875`
+
+#### Sideload (Development)
+
+1. Enable Developer Mode on your Roku:
+   - Press: **Home ×3 → Up ×2 → Right → Left → Right → Left → Right**
+2. Download `Media-Assistant.zip` from [Releases](https://github.com/MedievalApple/Media-Assistant/releases)
+3. Sideload via [Roku Development Setup](https://developer.roku.com/docs/developer-program/getting-started/developer-setup.md)
+4. Channel ID when sideloaded: `dev`
+
+### Prerequisites
+
+**Enable "Control by mobile apps" on Roku:**
+- Go to: **Settings → System → Advanced system settings → Control by mobile apps → Network access**
+
+### Using Media Assistant with Roku Visual
+
+#### Launch Media Assistant
+
+```bash
+# Using curl
+curl -d '' 'http://192.168.1.x:8060/launch/782875'
+
+# Using the on-screen remote in Roku Visual
+# Press Home to return to the main screen, then navigate to Media Assistant
+```
+
+#### Play Media via Deeplink
+
+```bash
+# Launch and play video
+curl -d '' 'http://192.168.1.x:8060/launch/782875?u=https%3A%2F%2Farchive.org%2Fdownload%2FBigBuckBunny_124%2FContent%2Fbig_buck_bunny_720p_surround.mp4&t=v'
+
+# Play audio with metadata
+curl -d '' 'http://192.168.1.x:8060/input?u=https://example.com/stream.mp3&t=a&songName=Test&artistName=Artist'
+```
+
+#### Supported Media Types
+
+| Type | Parameter | Description |
+|------|-----------|-------------|
+| Video | `t=v` | Plays video content (sets Video UI mode) |
+| Audio | `t=a` | Plays audio content (sets Audio UI mode) |
+| Metadata | `t=m` | Updates metadata only (Audio UI mode only) |
+
+#### Common URL Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `u` or `contentId` | Media URL (required) | `https://example.com/video.mp4` |
+| `t` | Media type (`a`, `v`, or `m`) | `v` for video |
+| `videoName` | Video title | `Big Buck Bunny` |
+| `songName` | Song title | `Local Elevator` |
+| `artistName` | Artist name | `Kevin MacLeod` |
+| `albumName` | Album name | `Epic Elevator Tunes` |
+| `albumArt` | Cover art image URL | `https://example.com/cover.jpg` |
+| `enqueue` | Queue after current item | `true` |
+
+### Media Assistant Settings
+
+Access settings in **Audio UI mode** by pressing **OK** on the remote:
+
+| Setting | Description |
+|---------|-------------|
+| **Album Art Background** | Use album art as background |
+| **Show Album Name If Available** | Display album name above song |
+| **Enable Screen Saver During Playback** | Allow screen saver during audio |
+
+⚠️ **Note:** If "Enable Screen Saver During Playback" is enabled:
+- Enqueued media will not play after current item
+- `/input?` commands will not work
+- `/launch` commands still function
+
+### Integration Examples
+
+#### JavaScript (Fetch API)
+
+```javascript
+const rokuIP = '192.168.1.x'
+const channelID = '782875'
+
+async function playMedia(url, type = 'v') {
+    const params = new URLSearchParams({ u: url, t: type })
+    
+    await fetch(`http://${rokuIP}:8060/launch/${channelID}?${params}`, {
+        method: 'POST',
+        mode: 'no-cors',
+    })
+}
+
+// Play video
+playMedia('https://example.com/video.mp4', 'v')
+
+// Play audio
+playMedia('https://example.com/audio.mp3', 'a')
+```
+
+#### Python (Requests)
+
+```python
+import requests
+
+roku_ip = '192.168.1.x'
+channel_id = '782875'
+
+def play_media(url, media_type='v'):
+    params = {'u': url, 't': media_type}
+    r = requests.post(f'http://{roku_ip}:8060/launch/{channel_id}', params=params)
+    
+    if r.status_code == 200:
+        print('Media playing successfully')
+
+play_media('https://example.com/video.mp4', 'v')
+```
+
+### Testing Tools
+
+- **Media Assistant Tester**: [medievalapple.net/ma-setup](https://medievalapple.net/ma-setup) - Web interface to test deeplinks
+- **Roku Visual HUD**: Shows active app (Media Assistant) and current state
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Media won't play | Verify URL is accessible and properly encoded |
+| Wrong UI mode | Ensure correct `t` parameter (`a` for audio, `v` for video) |
+| Settings not applying | Restart Media Assistant or start new media playback |
+| ECP commands fail | Check "Control by mobile apps" is enabled on Roku |
+
+### Resources
+
+- [Media Assistant GitHub](https://github.com/MedievalApple/Media-Assistant)
+- [Media Assistant Setup](https://medievalapple.net/ma-setup)
+- [Roku Deeplink Documentation](https://developer.roku.com/docs/developer-program/deep-linking/deep-linking.md)
+
 ## Development Tools
 
 This project includes a modern development toolchain for code quality and testing:
