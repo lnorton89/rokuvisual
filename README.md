@@ -2,7 +2,7 @@
 
 A Node.js server that polls your Roku TV via ECP (External Control Protocol) and drives a generative canvas visualization in the browser. Your Roku remote modulates the shape, color, and motion in real-time.
 
-![License](https://img.shields.io/badge/license-ISC-blue.svg)
+![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 
 ## Features
 
@@ -399,4 +399,8 @@ Tests cover:
 
 ## License
 
-ISC
+GNU Affero General Public License v3.0 (AGPL-3.0)
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+See [LICENSE](LICENSE) for the full license text.
