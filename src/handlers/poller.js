@@ -17,6 +17,7 @@ class RokuPoller {
     this.state = state;
     this.errorCount = 0;
     this.connected = false;
+    this.hasConnectedOnce = false;
   }
 
   /**
@@ -38,6 +39,13 @@ class RokuPoller {
       const appId = xmlField(appXml, 'id') || '0';
 
       let changed = false;
+
+      // First successful connection
+      if (!this.hasConnectedOnce) {
+        this.hasConnectedOnce = true;
+        addLog('info', `✓ ECP connected to Roku at ${this.ecp.ip}:${this.ecp.port}`);
+        addLog('ecp', `Power mode: ${powerMode}`);
+      }
 
       // Check power mode change
       if (powerMode !== this.state.powerMode) {

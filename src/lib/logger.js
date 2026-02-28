@@ -62,6 +62,8 @@ function addLog(level, message, detail = '') {
     console.log(`${prefix} [ECP] ${message}`);
   } else if (level === 'button') {
     console.log(`${prefix} [BTN] ${message}`);
+  } else if (level === 'info') {
+    console.log(`${prefix} ${message}`);
   } else {
     console.log(`${prefix} ${message}`);
   }

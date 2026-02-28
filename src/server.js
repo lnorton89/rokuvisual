@@ -61,6 +61,11 @@ server.listen(HOST_PORT, () => {
   console.log('\n   Set Roku IP:  ROKU_IP=x.x.x.x npm start');
   console.log('   Dev mode:     npm run dev');
   console.log(`   Inject buttons: POST http://localhost:${HOST_PORT}/keypress/<Key>\n`);
+
+  // Log server started
+  const { addLog } = require('./lib/logger');
+  addLog('info', `✓ Server started on http://localhost:${HOST_PORT}`);
+  addLog('info', `→ Connecting to Roku ECP at ${ROKU_IP}:${ROKU_PORT}...`);
 });
 
 // Start polling
