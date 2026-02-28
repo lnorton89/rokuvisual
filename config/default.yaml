@@ -1,0 +1,90 @@
+# Roku Visual Configuration
+
+server:
+  port: 30002
+  host: '0.0.0.0'
+
+roku:
+  ip: '192.168.1.155'
+  port: 8060
+  pollInterval: 200  # ms
+  maxErrors: 5       # before logging suppression
+  errorCooldown: 10000  # ms to wait after max errors
+
+logging:
+  maxEntries: 50     # max log entries to keep in memory
+  console: true      # log to console
+  verbose: false     # verbose ECP logging
+
+visual:
+  defaultMode: 'lissajous'
+  defaultHue: 200
+  defaultSpeed: 1.0
+  defaultComplexity: 3
+  defaultScale: 1.0
+  colorShift: false
+  modes:
+    - 'lissajous'
+    - 'rose'
+    - 'spirograph'
+    - 'wave'
+    - 'particles'
+
+# Button mappings: roku button -> visual effect
+buttonMap:
+  Left:
+    action: 'hue'
+    value: -15
+  Right:
+    action: 'hue'
+    value: 15
+  Up:
+    action: 'speed'
+    value: 0.25
+    min: 0.1
+    max: 5.0
+  Down:
+    action: 'speed'
+    value: -0.25
+    min: 0.1
+    max: 5.0
+  Select:
+    action: 'cycleMode'
+  OK:
+    action: 'cycleMode'
+  Info:
+    action: 'complexity'
+    value: 1
+    cycle: 8
+  Star:
+    action: 'complexity'
+    value: 1
+    cycle: 8
+  Back:
+    action: 'complexity'
+    value: -1
+    min: 1
+  Play:
+    action: 'toggle'
+    param: 'colorShift'
+  Pause:
+    action: 'toggle'
+    param: 'colorShift'
+  Fwd:
+    action: 'scale'
+    value: 0.2
+    min: 0.2
+    max: 3.0
+  Rev:
+    action: 'scale'
+    value: -0.2
+    min: 0.2
+    max: 3.0
+  Home:
+    action: 'reset'
+  VolumeUp:
+    action: 'volume'
+    value: 5
+  VolumeDown:
+    action: 'volume'
+    value: -5
