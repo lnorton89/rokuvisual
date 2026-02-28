@@ -65,7 +65,6 @@ server.listen(HOST_PORT, () => {
   // Log server started
   const { addLog } = require('./lib/logger');
   addLog('info', `✓ HTTP server listening on http://localhost:${HOST_PORT}`);
-  addLog('info', `→ Connecting to Roku ECP API at ${ROKU_IP}:${ROKU_PORT}...`);
 });
 
 // Start polling with initial delay to let Roku wake up
