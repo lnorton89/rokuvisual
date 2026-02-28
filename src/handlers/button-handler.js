@@ -6,8 +6,8 @@ const cfg = config.loadConfig();
 /**
  * Handle button press and update visual params
  */
-function handleButton(key, state) {
-  addLog('button', `Key pressed: ${key}`);
+function handleButton(key, state, source = 'unknown') {
+  addLog('button', `Key pressed: ${key}${source !== 'unknown' ? ` [${source}]` : ''}`);
 
   state.lastButton = key;
   state.buttonHistory = [key, ...state.buttonHistory].slice(0, 10);

@@ -610,7 +610,14 @@
         '+': 'VolumeUp',
         '-': 'VolumeDown'
       };
+
+      // Don't capture keyboard events when typing in inputs
       document.addEventListener('keydown', (e) => {
+        // Ignore if typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          return;
+        }
+
         const key = KB_MAP[e.key];
         if (key) {
           e.preventDefault();

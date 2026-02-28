@@ -13,7 +13,7 @@ function createApp() {
 
   // Inject button event from external caller or browser UI
   app.post('/keypress/:key', (req, res) => {
-    handleButton(req.params.key, global.state);
+    handleButton(req.params.key, global.state, 'HTTP');
 
     // Also forward to Roku so the TV actually responds
     const ECPClient = require('../lib/ecp-client');

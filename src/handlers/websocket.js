@@ -29,7 +29,7 @@ function createWebSocketServer(server) {
         const msg = JSON.parse(raw);
         if (msg.type === 'keypress' && msg.key) {
           const { handleButton } = require('../handlers/button-handler');
-          handleButton(msg.key, global.state);
+          handleButton(msg.key, global.state, 'WS');
         }
       } catch (e) {
         // Ignore invalid JSON
