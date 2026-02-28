@@ -247,10 +247,159 @@
         color: #888;
         font-size: 10px;
       }
+
+      /* Cast panel */
+      #cast-panel {
+        position: fixed;
+        right: 20px;
+        top: 80px;
+        width: 280px;
+        background: rgba(5, 5, 8, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        padding: 12px;
+        z-index: 35;
+        backdrop-filter: blur(8px);
+        display: none;
+      }
+      #cast-panel.visible {
+        display: block;
+      }
+      .cast-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .cast-title {
+        font-size: 12px;
+        font-weight: bold;
+        color: hsl(var(--hue), 80%, 60%);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .cast-close {
+        background: none;
+        border: none;
+        color: #666;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0 5px;
+      }
+      .cast-close:hover {
+        color: #fff;
+      }
+      .cast-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .cast-input {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 5px;
+        padding: 6px 10px;
+        color: #fff;
+        font-size: 12px;
+        font-family: 'Share Tech Mono', monospace;
+      }
+      .cast-input::placeholder {
+        color: #666;
+      }
+      .cast-btn {
+        background: hsl(var(--hue), 70%, 40%);
+        border: none;
+        border-radius: 5px;
+        padding: 6px 12px;
+        color: #fff;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Share Tech Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .cast-btn:hover:not(:disabled) {
+        background: hsl(var(--hue), 80%, 50%);
+      }
+      .cast-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .cast-status {
+        font-size: 10px;
+        color: #666;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .cast-status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #444;
+      }
+      .cast-status-dot.ok {
+        background: #27c527;
+        box-shadow: 0 0 6px #27c527;
+      }
+      .cast-status-dot.error {
+        background: #c52727;
+      }
+      #cast-toggle {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        background: hsl(var(--hue), 70%, 40%);
+        border: none;
+        border-radius: 8px;
+        padding: 8px 14px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 12px;
+        z-index: 36;
+        font-family: 'Share Tech Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        transition: all 0.2s;
+      }
+      #cast-toggle:hover {
+        background: hsl(var(--hue), 80%, 50%);
+      }
     </style>
   </head>
   <body>
     <canvas id="c"></canvas>
+
+    <!-- Cast toggle button -->
+    <button id="cast-toggle">📺 Cast</button>
+
+    <!-- Cast panel -->
+    <div id="cast-panel">
+      <div class="cast-header">
+        <span class="cast-title">Roku Cast</span>
+        <button class="cast-close" id="cast-close">×</button>
+      </div>
+      <div class="cast-row">
+        <input type="text" id="roku-ip-input" class="cast-input" placeholder="Roku IP (e.g., 192.168.1.155)">
+        <button class="cast-btn" id="cast-save-ip">Save</button>
+      </div>
+      <div class="cast-row">
+        <input type="text" id="media-url-input" class="cast-input" placeholder="Media URL (HLS/MP4)">
+      </div>
+      <div class="cast-row">
+        <input type="text" id="media-title-input" class="cast-input" placeholder="Title (optional)">
+      </div>
+      <div class="cast-row">
+        <button class="cast-btn" id="cast-send-btn" style="flex:1">Cast to Roku</button>
+      </div>
+      <div class="cast-status">
+        <span class="cast-status-dot" id="cast-status-dot"></span>
+        <span id="cast-status-text">Not connected</span>
+      </div>
+    </div>
 
     <!-- HUD -->
     <div id="hud">
@@ -609,6 +758,152 @@
       }
 
       frame();
+
+      // ── Roku Cast Panel ───────────────────────────────────────────────────────────
+      const ROKU_CHANNEL_ID = '782875'; // Media Assistant channel
+      const ROKU_ECP_PORT = 8060;
+
+      const castToggle = document.getElementById('cast-toggle');
+      const castPanel = document.getElementById('cast-panel');
+      const castClose = document.getElementById('cast-close');
+      const rokuIpInput = document.getElementById('roku-ip-input');
+      const mediaUrlInput = document.getElementById('media-url-input');
+      const mediaTitleInput = document.getElementById('media-title-input');
+      const castSendBtn = document.getElementById('cast-send-btn');
+      const castSaveIpBtn = document.getElementById('cast-save-ip');
+      const castStatusDot = document.getElementById('cast-status-dot');
+      const castStatusText = document.getElementById('cast-status-text');
+
+      // Load saved IP
+      const savedRokuIp = localStorage.getItem('rokuIp') || '';
+      if (savedRokuIp) {
+        rokuIpInput.value = savedRokuIp;
+      }
+
+      // Toggle cast panel
+      castToggle.onclick = () => {
+        castPanel.classList.toggle('visible');
+        if (castPanel.classList.contains('visible')) {
+          checkRokuConnection();
+        }
+      };
+
+      castClose.onclick = () => {
+        castPanel.classList.remove('visible');
+      };
+
+      // Save IP
+      castSaveIpBtn.onclick = () => {
+        const ip = rokuIpInput.value.trim();
+        if (ip) {
+          localStorage.setItem('rokuIp', ip);
+          setCastStatus('IP saved', 'ok');
+          checkRokuConnection();
+        }
+      };
+
+      // Check Roku connection
+      async function checkRokuConnection() {
+        const ip = rokuIpInput.value.trim();
+        if (!ip) {
+          setCastStatus('Not connected', '');
+          return;
+        }
+
+        try {
+          const response = await fetch(`http://${ip}:${ROKU_ECP_PORT}/query/device-info`, {
+            method: 'GET',
+            mode: 'no-cors'
+          });
+          // no-cors means we can't read the response, but success means reachable
+          setCastStatus('Roku connected', 'ok');
+        } catch (err) {
+          setCastStatus('Connection failed', 'error');
+        }
+      }
+
+      function setCastStatus(text, type) {
+        castStatusText.textContent = text;
+        castStatusDot.className = 'cast-status-dot';
+        if (type === 'ok') castStatusDot.classList.add('ok');
+        if (type === 'error') castStatusDot.classList.add('error');
+      }
+
+      // Cast to Roku
+      castSendBtn.onclick = async () => {
+        const ip = rokuIpInput.value.trim();
+        const mediaUrl = mediaUrlInput.value.trim();
+        const title = mediaTitleInput.value.trim() || document.title;
+
+        if (!ip) {
+          alert('Please enter Roku IP address');
+          return;
+        }
+        if (!mediaUrl) {
+          alert('Please enter media URL');
+          return;
+        }
+
+        // Build the launch URL with Media Assistant parameters
+        const launchUrl = `http://${ip}:${ROKU_ECP_PORT}/launch/${ROKU_CHANNEL_ID}?t=v&u=${encodeURIComponent(mediaUrl)}&videoName=${encodeURIComponent(title)}&videoFormat=hls`;
+
+        try {
+          const response = await fetch(launchUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+          });
+
+          setCastStatus('Casting...', 'ok');
+
+          // Log the cast event
+          addLogEntry({
+            ts: new Date().toISOString(),
+            level: 'info',
+            message: `Cast to Roku: ${title}`,
+            detail: mediaUrl
+          });
+
+          // Save to history
+          saveCastHistory({ title, url: mediaUrl, date: new Date().toLocaleTimeString() });
+
+          setTimeout(() => {
+            setCastStatus('Roku connected', 'ok');
+          }, 2000);
+        } catch (err) {
+          setCastStatus('Cast failed', 'error');
+          console.error('Cast error:', err);
+        }
+      };
+
+      // Auto-fill media URL from current page if it's a video
+      function detectMediaUrl() {
+        // Look for video elements
+        const video = document.querySelector('video');
+        if (video && video.src) {
+          mediaUrlInput.value = video.src;
+        }
+
+        // Look for HLS sources
+        const hlsSource = document.querySelector('source[type="application/x-mpegURL"]');
+        if (hlsSource && hlsSource.src) {
+          mediaUrlInput.value = hlsSource.src;
+        }
+      }
+
+      // Save cast history
+      function saveCastHistory(item) {
+        let history = JSON.parse(localStorage.getItem('castHistory') || '[]');
+        history = [item, ...history.slice(0, 9)];
+        localStorage.setItem('castHistory', JSON.stringify(history));
+      }
+
+      // Periodically check for media URLs
+      setInterval(detectMediaUrl, 5000);
+      detectMediaUrl();
     </script>
   </body>
 </html>
