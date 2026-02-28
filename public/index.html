@@ -363,10 +363,16 @@
         font-family: 'Share Tech Mono', monospace;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        transition: all 0.2s;
+        transition: all 0.2s, opacity 0.3s;
         display: flex;
         align-items: center;
         gap: 6px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      #cast-toggle.visible {
+        opacity: 1;
+        pointer-events: auto;
       }
       #cast-toggle:hover {
         background: hsl(var(--hue), 80%, 50%);
@@ -832,6 +838,21 @@
       const castSaveIpBtn = document.getElementById('cast-save-ip');
       const castStatusDot = document.getElementById('cast-status-dot');
       const castStatusText = document.getElementById('cast-status-text');
+
+      // Show cast button only when mouse is in browser window
+      let mouseInWindow = false;
+      
+      document.addEventListener('mouseenter', () => {
+        mouseInWindow = true;
+        castToggle.classList.add('visible');
+      });
+      
+      document.addEventListener('mouseleave', () => {
+        mouseInWindow = false;
+        castToggle.classList.remove('visible');
+        // Also hide the panel when mouse leaves
+        castPanel.classList.remove('visible');
+      });
 
       // Load saved IP
       const savedRokuIp = localStorage.getItem('rokuIp') || '';
