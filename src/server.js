@@ -68,9 +68,11 @@ server.listen(HOST_PORT, () => {
   addLog('info', `→ Connecting to Roku ECP at ${ROKU_IP}:${ROKU_PORT}...`);
 });
 
-// Start polling
-setInterval(() => poller.poll(), POLL_MS);
-poller.poll();
+// Start polling with initial delay to let Roku wake up
+setTimeout(() => {
+  setInterval(() => poller.poll(), POLL_MS);
+  poller.poll();
+}, 1000);
 
 // Graceful shutdown
 process.on('SIGINT', () => {

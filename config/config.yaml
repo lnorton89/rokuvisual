@@ -1,0 +1,5 @@
+# User Configuration Override
+# Copy settings from config/default.yaml and modify as needed
+
+roku:
+  ip: '192.168.1.155'  # Change this to your Roku's actual IP
